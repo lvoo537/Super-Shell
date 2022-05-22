@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <poll.h>
 
 #include "builtins.h"
 #include "io_helpers.h"
@@ -138,70 +139,132 @@ bn_ptr check_builtin(const char *cmd) {
 // this is the wc bultin
 ssize_t bn_wc(char **tokens,Node* front){
     if(tokens[1] == NULL){
-        display_error("ERROR: No input source provided","");
-        return -1;
-    }
-    int last_character_was_a_word = 0;
-    int number_of_spaces = 0;
-    int number_of_words = 0;
-    int number_of_characters = 0;
-    int number_of_newlines = 0;
-    char c;
-    char return_string1[64];
-    char return_string2[64];
-    char return_string3[64];
-    char directory[256];
-    strcpy(directory,tokens[1]);
-    if(tokens[1][0] == '$'){
-        char temp[256];
-        strcpy(temp,&tokens[1][1]);
-        char* temp_str_var2= check_if_variable_exists(front,temp);
-            if(temp_str_var2 != NULL){
-            strcpy(directory,temp_str_var2);
-        }
-    }
-    FILE* file;
-    file = fopen(directory,"r");
-    if(file == NULL){
-        display_error("ERROR: Cannot open file","");
-        return -1;
-    }
-    while(1){
-        c = (char)fgetc(file) ; 
-        if (c == EOF){
-            break ;
-        }
-        else if(c == ' ' ||c == '\t' || c == '\r'){
-            // number_of_words+=1;
-            number_of_spaces +=1;
-            if(last_character_was_a_word == 1){
-                number_of_words+=1;
+        FILE *fptr = NULL;
+        struct pollfd fds;
+        fds.fd = 0;     
+        fds.events = POLLIN; 
+        int ret = poll(&fds, 1, 10); // in your project, set this to 10, not 3000.
+        if (ret == 0) {
+            display_error("ERROR: No input source provided","");
+            return -1;
+        } else {
+            int last_character_was_a_word = 0;
+            int number_of_spaces = 0;
+            int number_of_words = 0;
+            int number_of_characters = 0;
+            int number_of_newlines = 0;
+            // char c;
+            char return_string1[64];
+            char return_string2[64];
+            char return_string3[64];
+            // char directory[256];
+            // strcpy(directory,tokens[1]);
+            // if(tokens[1][0] == '$'){
+            //     char temp[256];
+            //     strcpy(temp,&tokens[1][1]);
+            //     char* temp_str_var2= check_if_variable_exists(front,temp);
+            //         if(temp_str_var2 != NULL){
+            //         strcpy(directory,temp_str_var2);
+            //     }
+            // }
+            fptr = stdin;
+            char c = fgetc(fptr);
+            while (c != EOF) {
+                if(c == ' ' ||c == '\t' || c == '\r'){
+                // number_of_words+=1;
+                number_of_spaces +=1;
+                if(last_character_was_a_word == 1){
+                    number_of_words+=1;
+                }
+                last_character_was_a_word = 0;
+                }
+                else if(c == '\n'){
+                    number_of_newlines +=1;
+                    if(last_character_was_a_word == 1){
+                        number_of_words+=1;
+                    }
+                    last_character_was_a_word = 0;
+                }
+                else{
+                    last_character_was_a_word = 1;
+                }
+                
+                number_of_characters +=1;
+                c = fgetc(fptr);
             }
-            last_character_was_a_word = 0;
-        }
-        else if(c == '\n'){
-            number_of_newlines +=1;
-            if(last_character_was_a_word == 1){
-                number_of_words+=1;
-            }
-            last_character_was_a_word = 0;
-        }
-        else{
-            last_character_was_a_word = 1;
+            sprintf(return_string1,"word count %d\n",number_of_words);
+            sprintf(return_string2,"character count %d\n",number_of_characters);
+            sprintf(return_string3,"newline count %d\n",number_of_newlines);
+            display_message(return_string1);
+            display_message(return_string2);
+            display_message(return_string3);
+            return EXIT_SUCCESS;
         }
         
-        number_of_characters +=1;
+    }else{
+        int last_character_was_a_word = 0;
+        int number_of_spaces = 0;
+        int number_of_words = 0;
+        int number_of_characters = 0;
+        int number_of_newlines = 0;
+        char c;
+        char return_string1[64];
+        char return_string2[64];
+        char return_string3[64];
+        char directory[256];
+        strcpy(directory,tokens[1]);
+        if(tokens[1][0] == '$'){
+            char temp[256];
+            strcpy(temp,&tokens[1][1]);
+            char* temp_str_var2= check_if_variable_exists(front,temp);
+                if(temp_str_var2 != NULL){
+                strcpy(directory,temp_str_var2);
+            }
+        }
+        FILE* file;
+        file = fopen(directory,"r");
+        if(file == NULL){
+            display_error("ERROR: Cannot open file","");
+            return -1;
+        }
+        while(1){
+            c = (char)fgetc(file) ; 
+            if (c == EOF){
+                break ;
+            }
+            else if(c == ' ' ||c == '\t' || c == '\r'){
+                // number_of_words+=1;
+                number_of_spaces +=1;
+                if(last_character_was_a_word == 1){
+                    number_of_words+=1;
+                }
+                last_character_was_a_word = 0;
+            }
+            else if(c == '\n'){
+                number_of_newlines +=1;
+                if(last_character_was_a_word == 1){
+                    number_of_words+=1;
+                }
+                last_character_was_a_word = 0;
+            }
+            else{
+                last_character_was_a_word = 1;
+            }
+            
+            number_of_characters +=1;
+        }
+        // if(number_of_characters >0 &&number_of_spaces >0){
+        //     number_of_words+=1;
+        // }
+        sprintf(return_string1,"word count %d\n",number_of_words);
+        sprintf(return_string2,"character count %d\n",number_of_characters);
+        sprintf(return_string3,"newline count %d\n",number_of_newlines);
+        display_message(return_string1);
+        display_message(return_string2);
+        display_message(return_string3);
+        return 0;
     }
-    // if(number_of_characters >0 &&number_of_spaces >0){
-    //     number_of_words+=1;
-    // }
-    sprintf(return_string1,"word count %d\n",number_of_words);
-    sprintf(return_string2,"character count %d\n",number_of_characters);
-    sprintf(return_string3,"newline count %d\n",number_of_newlines);
-    display_message(return_string1);
-    display_message(return_string2);
-    display_message(return_string3);
-    return 0;
+    
 }
 
 
@@ -213,33 +276,57 @@ ssize_t bn_wc(char **tokens,Node* front){
 
 // this is the cat builtin
 ssize_t bn_cat(char **tokens,Node* front){
+    // char str[100] ="hello my name is lekan\n how are you titi\n is lolade ok?\n";
+    // char str2[100] ="what about chukwudi and amaka?";
+    // write(STDIN_FILENO, str, strnlen(str, MAX_STR_LEN));
+    // write(STDIN_FILENO, str2, strnlen(str2, MAX_STR_LEN));
     if(tokens[1] == NULL){
-        display_error("ERROR: No input source provided","");
-        return -1;
-    }
-    char* line = NULL;
-    size_t n;
-    char directory[256];
-    strcpy(directory,tokens[1]);
-    if(tokens[1][0] == '$'){
-        char temp[256];
-        strcpy(temp,&tokens[1][1]);
-        char* temp_str_var2= check_if_variable_exists(front,temp);
-            if(temp_str_var2 != NULL){
-            strcpy(directory,temp_str_var2);
+        char* line = NULL;
+        size_t n;
+        FILE *fptr = NULL;
+        struct pollfd fds;
+        fds.fd = 0;     
+        fds.events = POLLIN; 
+        int ret = poll(&fds, 1, 10); // in your project, set this to 10, not 3000.
+        if (ret == 0) {
+            display_error("ERROR: No input source provided","");
+            return -1;
+        } 
+        else {
+            fptr = stdin;
+            while(getline(&line,&n,fptr) != -1){
+                display_message(line);
+            }
+            free(line);
+            return 0;
         }
     }
-    FILE* file;
-    file = fopen(directory,"r");
-    if(file == NULL){
-        display_error("ERROR: Cannot open file","");
-        return -1;
+    else{
+        char* line = NULL;
+        size_t n;
+        char directory[256];
+        strcpy(directory,tokens[1]);
+        if(tokens[1][0] == '$'){
+            char temp[256];
+            strcpy(temp,&tokens[1][1]);
+            char* temp_str_var2= check_if_variable_exists(front,temp);
+                if(temp_str_var2 != NULL){
+                strcpy(directory,temp_str_var2);
+            }
+        }
+        FILE* file;
+        file = fopen(directory,"r");
+        if(file == NULL){
+            display_error("ERROR: Cannot open file","");
+            return -1;
+        }
+        while(getline(&line,&n,file) != -1){
+            display_message(line);
+        }
+        free(line);
+        return 0;
     }
-    while(getline(&line,&n,file) != -1){
-        display_message(line);
-    }
-    free(line);
-    return 0;
+    
 }
 
 
