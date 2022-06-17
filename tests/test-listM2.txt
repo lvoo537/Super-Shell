@@ -1,0 +1,19 @@
+Milestone2 tests 
+
+Provided tests:  All tests run leak santizer at the end. 
+0. All tests from milestone1 
+1. Declare a single variable 
+2. Echo variable value matches expected value 
+3. Can declare and access 100 variables successfully 
+4. Multi-line accesses. E.g. echo $var1 $var2 $var3 
+5. Declaration is similar to bash. E.g. myvar = hello fails (spaces!)
+6. "echo $ a" still displays $ a, i.e. a is not treated as a variable. 
+7. Memory leaks 
+8. Redefining variables works for 1 variable. 
+
+Edge cases (not provided):
+1. Variable declaration line cannot exceed 64 characters 
+2. Redefining variables works for 100 variables.
+3. Fail gracefully on malloc 
+
+

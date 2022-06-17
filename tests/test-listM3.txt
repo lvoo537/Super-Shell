@@ -1,0 +1,39 @@
+Milestone3 tests 
+
+Provided tests: 
+0. All tests from milestones 1 and 2 
+
+cd/ls: 
+
+Walkthrough test 1: 
+-Create a directory on our side 
+-navigate into that directory 
+-Type ls directory. should display . and ..
+
+Walkthrough test 2: 
+-Create a 3-level nested directory on our side 
+-Create a file in the inner most layer 
+-Verify that ls can find the file 
+
+
+wc: 
+
+Provided tests: 
+Test 1: One word file. Correct values are returned. 
+Test 2: One-Line Multiple word file. Correct values are returned. 
+Test 3: Multi-line file. Correct values are returned. 
+Test 4: Multi-line multi-word, with a blank line 
+Test 5: Generate a random file that ends in a newline. Compare wc output. 
+
+Hidden Tests:
+Test 6: A file that does not end in a space/newline. 
+Test 7: Test 4 but with more blank lines combinations 
+Test 8: Large file. 
+
+
+cat: 
+Tests 1-5, but simply checking output. 
+
+
+Hidden tests: 
+-Run against large file. 

@@ -1,0 +1,15 @@
+Milestone1 tests 
+
+Provided tests: 
+0. Program compiles with their Makefile + code is different then starter code 
+1. A line too long test (80 characters)
+2. No memory leaks reported by address santizer test 
+3. Check the return code of the shell is 0. 
+4. Typing unrecognized command, should write "ERROR: Unrecognized command: command" to stderr 
+5. "mysh$ " is shown after each line in stdout. 
+6. echo hello displays the string hello 
+
+
+Edge Cases
+1. 66 characters should report line too long 
+2. 62 characters echo works normally
